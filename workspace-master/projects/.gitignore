@@ -1,0 +1,7 @@
+*
+!.gitignore
+!README.md
+
+*!workspace-master/projects/i2c/
+*!workspace-master/projects/mpu_i2c/
+*!workspace-master/projects/pwm/
