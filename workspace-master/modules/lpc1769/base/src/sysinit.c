@@ -29,6 +29,8 @@
  * this code.
  */
 
+#define NO_BOARD_LIB
+
  #if defined(NO_BOARD_LIB)
  #include "chip.h"
  #else
