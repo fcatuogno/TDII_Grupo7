@@ -10,7 +10,8 @@
 
  /** \addtogroup I2C example
  ** @{ */
-#include "board.h"
+
+#include "chip.h"
 #include "main.h"
 #include "math.h"
 /** @brief hardware initialization function
@@ -22,8 +23,11 @@ static void initHardware(void)
 {
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock/1000);
-    Board_Init();
-    Board_LED_Set(0, false);
+
+	/* Initializes GPIO */
+	Chip_GPIO_Init(LPC_GPIO);
+	Chip_IOCON_Init(LPC_IOCON);
+
     Init_I2C(I2C1);
     Chip_I2C_SetClockRate(I2C1, CLOCK_RATE_MPU);
 	Chip_I2C_SetMasterEventHandler(I2C1, Chip_I2C_EventHandlerPolling);
@@ -159,9 +163,9 @@ void Converter_angle(uint16_t* samples,uint32_t* angle_x,uint32_t* angle_y,uint3
 // Tita: angulo de x Acc[1]
 // zeta : angulo de y Acc[0]
 // phi : angulo de z Acc[2]
-	angle_x = atan(-1*((double)samples[0]/A_R)/sqrt(pow(((double)samples[1]/A_R),2) + pow(((double)samples[2]/A_R),2)))* RAD_TO_DEG;
+	/*angle_x = atan(-1*((double)samples[0]/A_R)/sqrt(pow(((double)samples[1]/A_R),2) + pow(((double)samples[2]/A_R),2)))* RAD_TO_DEG;
 	angle_y = atan(((double)samples[1]/A_R)/sqrt(pow(((double)samples[0]/A_R),2) + pow(((double)samples[2]/A_R),2)))*RAD_TO_DEG;
-	angle_z= atan(sqrt(pow(((double)samples[0]/A_R),2) + pow(((double)samples[1]/A_R),2))/ ((double)samples[2]/A_R) ) *RAD_TO_DEG;
+	angle_z= atan(sqrt(pow(((double)samples[0]/A_R),2) + pow(((double)samples[1]/A_R),2))/ ((double)samples[2]/A_R) ) *RAD_TO_DEG;*/
 
 
 }

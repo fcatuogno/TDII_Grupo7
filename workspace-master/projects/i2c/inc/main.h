@@ -56,10 +56,25 @@ extern "C" {
 
 #elif
 #define CLOCK_RATE_MPU 				100000
-/*==================[inclusions]=============================================*/
 #endif
 
+/**
+ * I2C 0
+ */
+#define I2C_SCL0		0, 28
+#define I2C_SDA0		0, 27
 
+/**
+ * I2C 1
+ */
+#define I2C_SCL1		0, 20
+#define I2C_SDA1		0, 19
+
+/**
+ * I2C 2
+ */
+#define I2C_SCL2		0, 11
+#define I2C_SDA2		0, 10
 
 //Ratios de conversion
 #define A_R 16384.0
@@ -74,6 +89,10 @@ static void initHardware(void);
 static void pausems(uint32_t t);
 
 int main(void);
+
+/*==================[inclusions]=============================================*/
+
+
 /*==================[ functions ]=============================================*/
 void Init_I2C(I2C_ID_T);
 void MPU6050_Init(I2C_ID_T id);
