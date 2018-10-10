@@ -96,8 +96,8 @@ int main(void);
 /*==================[ functions ]=============================================*/
 void Init_I2C(I2C_ID_T);
 void MPU6050_Init(I2C_ID_T id);
-void Fill_Samples(uint16_t * samples, uint8_t * rbuf);
-void Converter_angle(uint16_t*,uint32_t*,uint32_t*,uint32_t*);
+void MPU6050_GetData(uint16_t * samples, uint8_t * rbuf);
+void MPU6050_GetAngle(uint16_t*,double*,double*,double*);
 /*==================[cplusplus]==============================================*/
 
 
