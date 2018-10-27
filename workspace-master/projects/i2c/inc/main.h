@@ -15,10 +15,11 @@ extern "C" {
 
 /** \addtogroup I2C example
  ** @{ */
-#define EJEMPLO 1
+
 /*==================[macros and definitions]=================================*/
 #define MPU6050_DEVICE_ADDRESS  	 0x68
 /*	Configuration	*/
+#define MPU6050_RA_SMPLRT_DIV		 0x19
 #define MPU6050_RA_CONFIG			 0x1A
 #define MPU6050_RA_GYRO_CONFIG		 0x1B
 #define MPU6050_RA_ACCEL_CONFIG	 	 0x1C
@@ -49,15 +50,7 @@ extern "C" {
 
 #define MPU6050_PWR1_SLEEP_BIT   	 6
 
-#ifdef EJEMPLO
-// Según ejemplo de LC:
-
 #define CLOCK_RATE_MPU 				400000
-
-#elif
-#define CLOCK_RATE_MPU 				100000
-#endif
-
 /**
  * I2C 0
  */
@@ -76,17 +69,43 @@ extern "C" {
 #define I2C_SCL2		0, 11
 #define I2C_SDA2		0, 10
 
-//Ratios de conversion
-#define A_R 16384.0
-#define G_R 131.0
 
 //Conversion de radianes a grados 180/PI
 #define RAD_TO_DEG 57.295779
 
+/*************************************** Constante para el filtro complementario *******************************************/
+/*
+ * Sensibilidad: Factor de escala de sensibilidad del giroscopio es de 131 LSB / [º/seg]
+ * */
+
+#define MPU6050_GS 131.0
+
+
+/*
+ * Sensibilidad: Factor de escalal de sensibilidad del acelerometro LSB/g
+ * */
+#define MPU6050_AS 16384.0
+
+
+
+/*
+ * Tiempo entre cada muestra: se realiza por medio del Systick Handler, cada 1 seg
+ * */
+#define MPU6050_DT		0.010
+/*
+ * BETA : constante con valor de 0.95 , esto determina que l giroscopo tenga más influencia en
+ * el valor del angulo.
+ */
+#define MPU6050_BETA 	0.98
+/*
+ * w0 :Velocidad angular nivel cero. 500º/seg / 2^16 -1
+ * */
+#define MPU6050_W0		0.0076
 
 
 static void initHardware(void);
 static void pausems(uint32_t t);
+
 
 int main(void);
 
@@ -96,8 +115,8 @@ int main(void);
 /*==================[ functions ]=============================================*/
 void Init_I2C(I2C_ID_T);
 void MPU6050_Init(I2C_ID_T id);
-void MPU6050_GetData(uint16_t * samples, uint8_t * rbuf);
-void MPU6050_GetAngle(uint16_t*,double*,double*,double*);
+void MPU6050_GetData(int16_t *, uint8_t *, uint8_t * );
+void MPU6050_GetAngle(int16_t*,double*,double*,double*);
 /*==================[cplusplus]==============================================*/
 
 
