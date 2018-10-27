@@ -58,17 +58,43 @@ void Init_I2C(I2C_ID_T id)
 
 void MPU6050_Init(I2C_ID_T id)
 {
-		uint8_t wbuf[2] = {MPU6050_RA_PWR_MGMT_1, 0};
+
+		uint8_t wbuf[2]={0,0};
+		/*Sleep & cycle disabled, 00
+		 *temp_sensor: 0, enabled but no used,
+		 *clock source: 0 : MPU internal - 8MHz
+		*/
+		wbuf[0]=MPU6050_RA_PWR_MGMT_1;
+		wbuf[1]=0x01;
 		Chip_I2C_MasterSend(id,MPU6050_DEVICE_ADDRESS,wbuf,2);
+
+		/*
+		*FSYNC: input disabled
+		*DLPF: 0
+		*	LPF Acc: 260Hz
+		*	LPF gyr: 265Hz
+		*/
 		wbuf[0]=MPU6050_RA_CONFIG;
 		wbuf[1]=0x00;
 		Chip_I2C_MasterSend(id,MPU6050_DEVICE_ADDRESS,wbuf,2);
+
+		/*
+		 * gyro full scale: -250º/seg : 250º/seg
+		 */
+		wbuf[0]=MPU6050_RA_GYRO_CONFIG;
+		wbuf[1]=0x00;
+		Chip_I2C_MasterSend(id,MPU6050_DEVICE_ADDRESS,wbuf,2);
+
+		/*
+		 * acc full scale: (-2G : 2G)
+		 */
 		wbuf[0]=MPU6050_RA_ACCEL_CONFIG;
 		wbuf[1]=0x00;
 		Chip_I2C_MasterSend(id,MPU6050_DEVICE_ADDRESS,wbuf,2);
-		wbuf[0]=MPU6050_RA_PWR_MGMT_2;
-		wbuf[1]=0x00;
-		Chip_I2C_MasterSend(id,MPU6050_DEVICE_ADDRESS,wbuf,2);
+
+
+
+
 }
 /** @brief Inicializacion de hardware
  *	@return nada
@@ -87,6 +113,7 @@ static void initHardware(void)
 }
 
 /** @brief Tiempo de reposo del microprocesador
+ * 	@param t tiempo en milisegundos de reposo
  *	@return nada
  */
 static void pausems(uint32_t t)
@@ -111,17 +138,20 @@ void SysTick_Handler(void)
  */
 int main(void)
 {
- 	uint8_t rbuf[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};	/*	buffer para recibir en el MPU	*/
-	uint16_t samples[7] = {0,0,0,0,0,0,0};	//	Cada posicion es de 16 bits, necesario para guardar	la parte low y high de las muestras de los datos
+
+ 	uint8_t rbuf_accel[6] = {0,0,0,0,0,0};	/*	buffer para recibir ACCEl del MPU	*/
+	uint8_t  rbuf_gyro[6] = {0,0,0,0,0,0};	/*	buffer para recibir GYRO del MPU	*/
+	int16_t samples[6] ={ 0,0,0,0,0,0 };	//	Cada posicion es de 16 bits, necesario para guardar	la parte low y high de las muestras de los datos
 	initHardware();
 	MPU6050_Init(I2C1);
 	double aux_x=0,aux_y=0,aux_z=0;
 	while(1)
 	{
-		 	 pausems(1000);
-		 	 Chip_I2C_MasterCmdRead(I2C1,MPU6050_DEVICE_ADDRESS,MPU6050_RA_ACCEL_XOUT_H, rbuf, 14);
-		 	 MPU6050_GetData(samples,rbuf);
-		 	 MPU6050_GetAngle(samples,&aux_x,&aux_y,&aux_z);
+		 	pausems(10);
+		 	Chip_I2C_MasterCmdRead(I2C1,MPU6050_DEVICE_ADDRESS,MPU6050_RA_ACCEL_XOUT_H, rbuf_accel, 6);
+		 	Chip_I2C_MasterCmdRead(I2C1,MPU6050_DEVICE_ADDRESS,MPU6050_RA_GYRO_XOUT_H, rbuf_gyro, 6);
+		 	MPU6050_GetData(samples,rbuf_accel,rbuf_gyro);
+		 	MPU6050_GetAngle(samples,&aux_x,&aux_y,&aux_z);
 	}
 
 	return 0;
@@ -134,17 +164,18 @@ int main(void)
  *	@details
  *  Desplazamos la parte alta a los 8 ultimos bits y le hacemos un OR para tener en los 8 primeros la parte baja
  */
-void MPU6050_GetData(uint16_t * samples, uint8_t * rbuf)
-{
-	samples[0]=(rbuf[0] << 8) | rbuf[1];  	// aceleracion angulo x
-	samples[1]=(rbuf[2] << 8) | rbuf[3];  	// aceleracion angulo y
-	samples[2]=(rbuf[4] << 8) | rbuf[5];  	// aceleracion angulo z
-	samples[3]=(rbuf[6] << 8) | rbuf[7];  	// temperatura
-	samples[4]=(rbuf[8] << 8) | rbuf[9];  	// giroscopio angulo x
-	samples[5]=(rbuf[10] << 8)| rbuf[11];  	// giroscopio angulo y
-	samples[6]=(rbuf[12] << 8)| rbuf[13];  	// giroscopio angulo z
-}
 
+
+void MPU6050_GetData(int16_t * samples, uint8_t * rbuf_a,uint8_t * rbuf_g)
+{
+	samples[0]=( ((int16_t) rbuf_a[0] << 8) | rbuf_a[1] );  	// aceleracion angulo x
+	samples[1]=(  ((int16_t) rbuf_a[2] << 8) | rbuf_a[3] );  	// aceleracion angulo y
+	samples[2]=(  ((int16_t) rbuf_a[4] << 8) | rbuf_a[5] );  	// aceleracion angulo z
+
+	samples[3]=(  ((int16_t) rbuf_g[0] << 8) | rbuf_g[1] );  	// giroscopio angulo x
+	samples[4]=(  ((int16_t) rbuf_g[2] << 8)| rbuf_g[3] );  	// giroscopio angulo y
+	samples[5]=(  ((int16_t) rbuf_g[4] << 8)| rbuf_g[5] );  	// giroscopio angulo z
+}
 /** @brief 	Devuelve los angulos del modulo MPU6050
  *  @param	samples : vector donde se encuentran los datos ya concatenados.
  *  @param  angle_x : vector de la comunicacion i2s donde se encuentran las partes de los datos.
@@ -159,12 +190,23 @@ void MPU6050_GetData(uint16_t * samples, uint8_t * rbuf)
  *
 **/
 
-void MPU6050_GetAngle(uint16_t* samples,double* angle_x,double* angle_y,double* angle_z)
+void MPU6050_GetAngle(int16_t* samples,double* angle_x,double* angle_y,double* angle_z)
 {
-	*angle_x = atan(-1*((double)samples[0]/A_R)/sqrt(pow(((double)samples[1]/A_R),2) + pow(((double)samples[2]/A_R),2)))* RAD_TO_DEG;
-	*angle_y = atan(((double)samples[1]/A_R)/sqrt(pow(((double)samples[0]/A_R),2) + pow(((double)samples[2]/A_R),2)))*RAD_TO_DEG;
-	*angle_z= atan(sqrt(pow(((double)samples[0]/A_R),2) + pow(((double)samples[1]/A_R),2))/ ((double)samples[2]/A_R) ) *RAD_TO_DEG;
-}
+	double altX=0,altY=0,altZ=0;
+	static double subX=0,subY=0,subZ=0;
 
+	altX = atan2((double)(samples[0]),sqrt(pow( samples[1],2) + pow( samples[2],2))) * RAD_TO_DEG;
+	altY = atan2((double)(samples[1]),sqrt(pow( samples[0],2) + pow(samples[2],2)))*RAD_TO_DEG;
+	altZ = atan2((double)sqrt(pow(samples[0],2) + pow( samples[1],2) ),samples[2] ) *RAD_TO_DEG;
+
+	*angle_x=altX*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples[4] / MPU6050_GS)*MPU6050_DT + subX);
+	*angle_y=altY*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples[5] / MPU6050_GS)*MPU6050_DT + subY);
+	*angle_z=altZ*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples[6] / MPU6050_GS)*MPU6050_DT + subZ);
+
+
+	subX=*angle_x;
+	subY=*angle_y;
+	subZ=*angle_z;
+}
 /** @} doxygen end group definition */
 /*==================[end of file]============================================*/
