@@ -31,7 +31,7 @@
 
 -include project.mk
 
-PROJECT ?= projects/i2c
+PROJECT ?= projects/test_MPU6050
 TARGET ?= lpc1769
 BOARD ?= lpcxpresso1769
 
