@@ -29,10 +29,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-board_PATH := modules/lpc1769/board
+#board_PATH := modules/lpc1769/board
 
-board_SRC_FILES := $(wildcard $(board_PATH)/src/*.c)
+#board_SRC_FILES := $(wildcard $(board_PATH)/src/*.c)
 
-board_INC_FOLDERS := $(board_PATH)/inc
+#board_INC_FOLDERS := $(board_PATH)/inc
 
-board_SRC_FOLDERS := $(board_PATH)/src
+#board_SRC_FOLDERS := $(board_PATH)/src

@@ -379,6 +379,36 @@ void Chip_I2C_Init(I2C_ID_T id)
 	LPC_I2Cx(id)->CONCLR = (I2C_CON_AA | I2C_CON_SI | I2C_CON_STA | I2C_CON_I2EN);
 }
 
+/* Sets up board specific I2C interface */
+void Chip_I2C_InitPins(I2C_ID_T id)
+{
+	switch (id) {
+	case I2C0:
+		Chip_IOCON_PinMux(LPC_IOCON, I2C_SCL0, IOCON_MODE_INACT, IOCON_FUNC1);
+		Chip_IOCON_PinMux(LPC_IOCON, I2C_SDA0, IOCON_MODE_INACT, IOCON_FUNC1);
+		Chip_IOCON_SetI2CPad(LPC_IOCON, I2CPADCFG_STD_MODE);
+		break;
+
+	case I2C1:
+		Chip_IOCON_PinMux(LPC_IOCON, I2C_SCL1, IOCON_MODE_INACT, IOCON_FUNC3);
+		Chip_IOCON_PinMux(LPC_IOCON, I2C_SDA1, IOCON_MODE_INACT, IOCON_FUNC3);
+		Chip_IOCON_EnableOD(LPC_IOCON, I2C_SCL1);
+		Chip_IOCON_EnableOD(LPC_IOCON, I2C_SDA1);
+		break;
+
+	case I2C2:
+		Chip_IOCON_PinMux(LPC_IOCON, I2C_SCL2, IOCON_MODE_INACT, IOCON_FUNC2);
+		Chip_IOCON_PinMux(LPC_IOCON, I2C_SDA2, IOCON_MODE_INACT, IOCON_FUNC2);
+		Chip_IOCON_EnableOD(LPC_IOCON, I2C_SCL2);
+		Chip_IOCON_EnableOD(LPC_IOCON, I2C_SDA2);
+		break;
+
+	case I2C_NUM_INTERFACE:
+	default:
+		break;
+	}
+}
+
 /* De-initializes the I2C peripheral registers to their default reset values */
 void Chip_I2C_DeInit(I2C_ID_T id)
 {

@@ -118,6 +118,7 @@ typedef struct{
 **********************************************************************/
 #define PWM1_LER_ENABLE_MATCH(n)	1<<n
 
+
 void PWM1_SelectChannel(LPC_PWM1_T *pPWM, uint32_t num);
 void PWM1_EnableCounters(LPC_PWM1_T *pPWM);
 void PWM1_ConfigMatch(LPC_PWM1_T *pPWM, uint8_t numchannel,uint8_t interr,uint8_t reset,uint8_t stop);

@@ -233,6 +233,27 @@ typedef struct {				/* I2C0 Structure         */
 #define I2C_MONITOR_CFG_SCL_OUTPUT  I2C_I2MMCTRL_ENA_SCL		/**< SCL output enable */
 #define I2C_MONITOR_CFG_MATCHALL    I2C_I2MMCTRL_MATCH_ALL		/**< Select interrupt register match */
 
+
+
+/**
+ * @brief I2C 0 pins
+ */
+#define I2C_SCL0		0, 28
+#define I2C_SDA0		0, 27
+
+/**
+ * @brief I2C 1 pins
+ */
+#define I2C_SCL1		0, 20
+#define I2C_SDA1		0, 19
+
+/**
+ * @brief I2C 2 pins
+ */
+#define I2C_SCL2		0, 11
+#define I2C_SDA2		0, 10
+
+
 /**
  * @brief	I2C Slave Identifiers
  */
@@ -308,7 +329,12 @@ typedef void (*I2C_EVENTHANDLER_T)(I2C_ID_T, I2C_EVENT_T);
  * @return	Nothing
  */
 void Chip_I2C_Init(I2C_ID_T id);
-
+/**
+ * @brief	Initializes the pins to work with I2S, in the LPC_I2C peripheral with specified parameter.
+ * @param	id			: I2C peripheral ID (I2C0, I2C1 ... etc)
+ * @return	Nothing
+ */
+void Chip_I2C_InitPins(I2C_ID_T id);
 /**
  * @brief	De-initializes the I2C peripheral registers to their default reset values
  * @param	id			: I2C peripheral ID (I2C0, I2C1 ... etc)

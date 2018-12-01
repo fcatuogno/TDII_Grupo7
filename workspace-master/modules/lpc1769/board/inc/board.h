@@ -103,24 +103,6 @@ extern "C" {
 #define JOY_PRESS           0x10
 
 /**
- * I2C 0
- */
-#define I2C_SCL0		0, 28
-#define I2C_SDA0		0, 27
-
-/**
- * I2C 1
- */
-#define I2C_SCL1		0, 20
-#define I2C_SDA1		0, 19
-
-/**
- * I2C 2
- */
-#define I2C_SCL2		0, 11
-#define I2C_SDA2		0, 10
-
-/**
  * Dummy audio input selection values enum
  */
 #define MCB_17XX_AUDIO_MIC_SELECT       0x00
