@@ -203,7 +203,6 @@ void MPU6050_GetAngle(int16_t* samples,double* angle_x,double* angle_y,double* a
 	*angle_y=altY*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples[5] / MPU6050_GS)*MPU6050_DT + subY);
 	*angle_z=altZ*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples[6] / MPU6050_GS)*MPU6050_DT + subZ);
 
-
 	subX=*angle_x;
 	subY=*angle_y;
 	subZ=*angle_z;
