@@ -126,7 +126,7 @@ void PWM1_ResetCounters(LPC_PWM1_T *pPWM);
 void PWM1_ControlChannel(LPC_PWM1_T *pPWM, uint8_t numchann,uint8_t modo_edge,uint8_t enable_out );
 void PWM1_ValueMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value);
 void PWM1_ValuePrescale(LPC_PWM1_T *pPWM, uint32_t value);
-
+void PWM1_Match(LPC_PWM1_T *  pPWM, uint8_t numchann, uint32_t* value);
 STATIC INLINE void PWM1_enableCLK (LPC_PWM1_T * pPWM)
 {
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_PWM1);
@@ -166,6 +166,7 @@ STATIC INLINE void PWM1_EnableMatchValue(LPC_PWM1_T *pPWM, uint8_t numchannel)
 {
 	pPWM->LER|= (numchannel<7)? PWM1_LER_ENABLE_MATCH(numchannel): 0x00;
 }
+
 
 #endif /* defined(CHIP_LPC175X_6X) */
 
