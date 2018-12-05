@@ -121,6 +121,42 @@ void PWM1_ValueMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value)
 	}
 }
 /**
+ * @brief	Valor del MATCH register
+ * @param	pPWM		: Pointer to timer IP register address
+ * @param	matchnum	: Match interrupt number
+ * @param	value		: Valor del MATCH
+ * @return
+ */
+void PWM1_Match(LPC_PWM1_T *  pPWM, uint8_t numchann, uint32_t* value)
+{
+	switch(numchann)
+	{
+		case CH0:
+			*value=pPWM->MR0;
+		break;
+		case CH1:
+			*value=pPWM->MR1;
+		break;
+		case CH2:
+			*value=pPWM->MR2;
+		break;
+		case CH3:
+			*value=pPWM->MR3;
+		break;
+		case CH4:
+			*value=pPWM->MR4;
+		break;
+		case CH5:
+			*value=pPWM->MR5;
+		break;
+		case CH6:
+			*value=pPWM->MR6;
+		break;
+		default:
+		break;
+	}
+}
+/**
  * @brief	Valor del PREESCALE COUNTERregister
  * @param	pPWM		: Pointer to timer IP register address
  * @param	value		: Valor del prescaler
