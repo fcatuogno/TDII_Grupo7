@@ -38,8 +38,11 @@
 
  /** \addtogroup pwm PWM example
  ** @{ */
-#include "board.h"
+#include "chip.h"
 #include "main.h"
+#include "motor.h"
+
+
 /** @brief hardware initialization function
  *	@return none
  */
@@ -47,25 +50,6 @@ static void initHardware(void);
 /** @brief delay function
 * @param t desired milliseconds to wait
 */
-
-#define FREQ_50HZ	475600 // cantidad de ticks para llegar a los 20mseg.
-/*
-#define ANGLE_N90	475600/40	// a los 0.5mseg
-#define ANGLE_N45	475600/20	// a los 1mseg
-#define ANGLE_0		475600*0.075	// a los 1.5mseg
-#define ANGLE_P45	475600/10	// a los 2mseg
-#define ANGLE_P90	475600*0.11	// a los 2.2mseg //
-#define ANGLE_PX 	475600*0.12 // a los 2.4mseg
-*/
-
-#define ANGLE_N95	475600/40		// a los 0.5mseg
-#define ANGLE_N90	475600*0.03		// a los 0.6mseg
-#define ANGLE_N45	475600*0.05125	// a los 1.025mseg
-#define ANGLE_DELTA1 475600*0.0094*0.5  // salto de 1 grado
-#define ANGLE_0 	475600*0.0725	// a los 1.45mseg
-#define ANGLE_P45	475600*0.09375  // a los 1.875mseg
-#define ANGLE_P90 	475600*0.115	// a los 2.3mseg
-#define ANGLE_P95 	475600*0.12 	// a los 2.4mseg
 
 static void pausems(uint32_t t);
 
@@ -76,49 +60,11 @@ static void initHardware(void)
 {
     SystemCoreClockUpdate();
     SysTick_Config(SystemCoreClock/1000);
-    Board_Init();
-    Board_LED_Set(0, false);
-   /******************* PWM *******************/
-    /* Configuramos los pines con la funcion PWM */
-	PWM1_SelectChannel(LPC_PWM1,CH1);
-	PWM1_SelectChannel(LPC_PWM1,CH2);
-	PWM1_SelectChannel(LPC_PWM1,CH3);
-	PWM1_SelectChannel(LPC_PWM1,CH4);
-	/* Habilitamos el clock y su prescale para el modulo */
-	PWM1_enableCLK(LPC_PWM1);
-	PWM1_preescaleCLK(LPC_PWM1,0);
-
-	/* Match 0 (period) */
-	PWM1_ValueMatch(LPC_PWM1,CH0,FREQ_50HZ);//
-	/* Match 1 (duty) */
-	PWM1_ValueMatch(LPC_PWM1,CH1,ANGLE_0);
-	/* Match 2 (duty) */
-	PWM1_ValueMatch(LPC_PWM1,CH2,ANGLE_0);
-	/* Match 3 (duty) */
-	PWM1_ValueMatch(LPC_PWM1,CH3,ANGLE_0);
-	/* Match 4 (duty) */
-	PWM1_ValueMatch(LPC_PWM1,CH4,ANGLE_0);
-
-	/* Definimos que el MR0 resetee el TC */
-	PWM1_ConfigMatch(LPC_PWM1,CH0,0,0,0);
-
-	/* Activamos el modo PWM y habilitamos el conteo de TC y PC */
-	PWM1_EnableCounters(LPC_PWM1);
-
-	/* Habilito los cambios en los MATCH's */
-	PWM1_EnableMatchValue(LPC_PWM1,CH0);
-	PWM1_EnableMatchValue(LPC_PWM1,CH1);
-	PWM1_EnableMatchValue(LPC_PWM1,CH2);
-	PWM1_EnableMatchValue(LPC_PWM1,CH3);
-	PWM1_EnableMatchValue(LPC_PWM1,CH4);
-
-	/* Habilito las salidas del canal */
-	PWM1_ControlChannel(LPC_PWM1,CH1,0,1);
-	PWM1_ControlChannel(LPC_PWM1,CH2,0,1);
-	PWM1_ControlChannel(LPC_PWM1,CH3,0,1);
-	PWM1_ControlChannel(LPC_PWM1,CH4,0,1);
-
-	PWM1_ResetCounters(LPC_PWM1);
+	/* Initializes GPIO */
+	Chip_GPIO_Init(LPC_GPIO);
+	Chip_IOCON_Init(LPC_IOCON);
+	/*Inicializamos el pwm*/
+    Motor_Init(CHANNELs,FREQ_50HZ);
 }
 static void pausems(uint32_t t)
 {
@@ -139,65 +85,24 @@ int main(void)
 	uint8_t i=1;
    while(1) {
 
-      pausems(1000);
+     pausems(100);
 
-      if(i==1)
-     // Cambio los valores de los match's
-      {PWM1_ValueMatch(LPC_PWM1,CH1,ANGLE_0 + ANGLE_DELTA1);
-      PWM1_ValueMatch(LPC_PWM1,CH2,ANGLE_0  + ANGLE_DELTA1);
-      PWM1_ValueMatch(LPC_PWM1,CH3,ANGLE_0 + ANGLE_DELTA1);
-      PWM1_ValueMatch(LPC_PWM1,CH4,ANGLE_0 + ANGLE_DELTA1);
-  	 // Habilito los cambios en los MATCH's
-      PWM1_EnableMatchValue(LPC_PWM1,CH0);
-      PWM1_EnableMatchValue(LPC_PWM1,CH1);
-      PWM1_EnableMatchValue(LPC_PWM1,CH2);
-      PWM1_EnableMatchValue(LPC_PWM1,CH3);
-      PWM1_EnableMatchValue(LPC_PWM1,CH4);
-      i++;
-      }
-      if(i==4)
-	   // Cambio los valores de los match's
-		{PWM1_ValueMatch(LPC_PWM1,CH1,ANGLE_0);
-		PWM1_ValueMatch(LPC_PWM1,CH2,ANGLE_0);
-		PWM1_ValueMatch(LPC_PWM1,CH3,ANGLE_0);
-		PWM1_ValueMatch(LPC_PWM1,CH4,ANGLE_0);
-		 // Habilito los cambios en los MATCH's
-		PWM1_EnableMatchValue(LPC_PWM1,CH0);
-		PWM1_EnableMatchValue(LPC_PWM1,CH1);
-		PWM1_EnableMatchValue(LPC_PWM1,CH2);
-		PWM1_EnableMatchValue(LPC_PWM1,CH3);
-		PWM1_EnableMatchValue(LPC_PWM1,CH4);
-		i=1;
-		}
-      if(i==2)
-	   // Cambio los valores de los match's
-		{PWM1_ValueMatch(LPC_PWM1,CH1,ANGLE_0);
-		PWM1_ValueMatch(LPC_PWM1,CH2,ANGLE_0);
-		PWM1_ValueMatch(LPC_PWM1,CH3,ANGLE_0);
-		PWM1_ValueMatch(LPC_PWM1,CH4,ANGLE_0);
-		 // Habilito los cambios en los MATCH's
-		PWM1_EnableMatchValue(LPC_PWM1,CH0);
-		PWM1_EnableMatchValue(LPC_PWM1,CH1);
-		PWM1_EnableMatchValue(LPC_PWM1,CH2);
-		PWM1_EnableMatchValue(LPC_PWM1,CH3);
-		PWM1_EnableMatchValue(LPC_PWM1,CH4);
-		i++;
-		}
-      if(i==3)
-	   // Cambio los valores de los match's
-		{PWM1_ValueMatch(LPC_PWM1,CH1,ANGLE_0 - ANGLE_DELTA1);
-		PWM1_ValueMatch(LPC_PWM1,CH2,ANGLE_0 - ANGLE_DELTA1);
-		PWM1_ValueMatch(LPC_PWM1,CH3,ANGLE_0 - ANGLE_DELTA1);
-		PWM1_ValueMatch(LPC_PWM1,CH4,ANGLE_0 - ANGLE_DELTA1);
-		 // Habilito los cambios en los MATCH's
-		PWM1_EnableMatchValue(LPC_PWM1,CH0);
-		PWM1_EnableMatchValue(LPC_PWM1,CH1);
-		PWM1_EnableMatchValue(LPC_PWM1,CH2);
-		PWM1_EnableMatchValue(LPC_PWM1,CH3);
-		PWM1_EnableMatchValue(LPC_PWM1,CH4);
-		i++;
-		}
+/*      switch(i)
+      {
+      case 0:
 
+    	  Motor_Set(CH1,ANGLE_P45);
+    	  i++;
+    	  break;
+      case 1:
+    	  Motor_Set(CH1,ANGLE_N45);
+    	  i++;
+    	  break;
+      case 2:
+    	  Motor_Set(CH1,ANGLE_0);
+    	  i=0;
+    	  break;
+      } */
    }/* End while */
 } /* End Main*/
 
