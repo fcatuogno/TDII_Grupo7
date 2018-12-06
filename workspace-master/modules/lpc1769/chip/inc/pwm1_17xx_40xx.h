@@ -124,9 +124,9 @@ void PWM1_EnableCounters(LPC_PWM1_T *pPWM);
 void PWM1_ConfigMatch(LPC_PWM1_T *pPWM, uint8_t numchannel,uint8_t interr,uint8_t reset,uint8_t stop);
 void PWM1_ResetCounters(LPC_PWM1_T *pPWM);
 void PWM1_ControlChannel(LPC_PWM1_T *pPWM, uint8_t numchann,uint8_t modo_edge,uint8_t enable_out );
-void PWM1_ValueMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value);
+void PWM1_SetMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value);
 void PWM1_ValuePrescale(LPC_PWM1_T *pPWM, uint32_t value);
-void PWM1_Match(LPC_PWM1_T *  pPWM, uint8_t numchann, uint32_t* value);
+void PWM1_GetMatch(LPC_PWM1_T *  pPWM, uint8_t numchann, uint32_t* value);
 STATIC INLINE void PWM1_enableCLK (LPC_PWM1_T * pPWM)
 {
 	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_PWM1);
