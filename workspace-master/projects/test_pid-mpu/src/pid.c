@@ -12,6 +12,8 @@
 /*	Inicializacion de las constante del control PID	*/
 void PID_Init( VALUES_K* var, float kp, float ki, float kd)
 {
+	if( kp <= 0 || ki < 0 || kd < 0)
+	{ return; }
 	var->Kp=kp;
 	var->Ki=ki;
 	var->Kd=kd;
@@ -19,19 +21,22 @@ void PID_Init( VALUES_K* var, float kp, float ki, float kd)
 /* Cambio los valores de las constantes del control PID*/
 void PID_SetK(VALUES_K* var, float value, KTES k)
 {
-	switch(k)
+	if (value>=0)
 	{
-		case KP:
-			var->Kp=value;
-		break;
-		case KI:
-			var->Ki=value;
-		break;
-		case KD:
-			var->Kd=value;
-		break;
-		default:
+		switch(k)
+		{
+			case KP:
+				var->Kp=value;
 			break;
+			case KI:
+				var->Ki=value;
+			break;
+			case KD:
+				var->Kd=value;
+			break;
+			default:
+				break;
+		}
 	}
 }
 

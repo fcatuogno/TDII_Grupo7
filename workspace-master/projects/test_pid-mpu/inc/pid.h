@@ -30,6 +30,7 @@ typedef enum
 	KI,
 	KD
 }KTES;
+
 void PID_Init( VALUES_K* var, float k1, float k2, float k3);
 void PID_SetK( VALUES_K* var, float value,KTES k);
 float PID_GetK(VALUES_K* const var,KTES k);
