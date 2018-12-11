@@ -91,7 +91,7 @@ void PWM1_ControlChannel(LPC_PWM1_T *pPWM, uint8_t numchann,uint8_t modo_edge,ui
  * @param	value		: Valor del MATCH
  * @return
  */
-void PWM1_ValueMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value)
+void PWM1_SetMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value)
 {
 	switch(numchann)
 	{
@@ -127,7 +127,7 @@ void PWM1_ValueMatch(LPC_PWM1_T *pPWM, uint8_t numchann, uint32_t value)
  * @param	value		: Valor del MATCH
  * @return
  */
-void PWM1_Match(LPC_PWM1_T *  pPWM, uint8_t numchann, uint32_t* value)
+void PWM1_GetMatch(LPC_PWM1_T *  pPWM, uint8_t numchann, uint32_t* value)
 {
 	switch(numchann)
 	{
