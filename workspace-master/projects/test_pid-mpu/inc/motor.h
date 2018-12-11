@@ -22,24 +22,16 @@ extern "C" {
 #define FREQ_50HZ	475600
 /* @brief Todos los canales habilitados. */
 #define CHANNELs    0x0F
-/*
-#define ANGLE_N90	475600/40	// a los 0.5mseg
-#define ANGLE_N45	475600/20	// a los 1mseg
-#define ANGLE_0		475600*0.075	// a los 1.5mseg
-#define ANGLE_P45	475600/10	// a los 2mseg
-#define ANGLE_P90	475600*0.11	// a los 2.2mseg //
-#define ANGLE_PX 	475600*0.12 // a los 2.4mseg
-*/
 
-#define ANGLE_N95	475600/40		/* @brief a los 0.5mseg */
-#define ANGLE_N90	475600*0.03		/* @brief a los 0.6mseg */
-#define ANGLE_N45	475600*0.05125	/* @brief a los 1.025mseg */
+#define ANGLE_N95	475600/40		/* @brief a los 0.5mseg */ 				//11890
+#define ANGLE_N90	475600*0.03		/* @brief a los 0.6mseg */				//14268
+#define ANGLE_N45	475600*0.05125	/* @brief a los 1.025mseg */			//24374.5
 //#define ANGLE_DELTA1 475600*0.0094*0.5  /* @brief salto de 1 grado */
-#define ANGLE_DELTA1 (ANGLE_P95-ANGLE_0)/95
-#define ANGLE_0 	475600*0.0725	/* @brief a los 1.45mseg */
-#define ANGLE_P45	475600*0.09375  /* @brief a los 1.875mseg */
-#define ANGLE_P90 	475600*0.115	/* @brief a los 2.3mseg */
-#define ANGLE_P95 	475600*0.12 	/* @brief a los 2.4mseg */
+#define ANGLE_DELTA1 (ANGLE_P95-ANGLE_0)/95									//
+#define ANGLE_0 	475600*0.0725	/* @brief a los 1.45mseg */				//34481
+#define ANGLE_P45	475600*0.09375  /* @brief a los 1.875mseg */			//44587.5
+#define ANGLE_P90 	475600*0.115	/* @brief a los 2.3mseg */				//54694
+#define ANGLE_P95 	475600*0.12 	/* @brief a los 2.4mseg */				//57072
 
 
 typedef enum{

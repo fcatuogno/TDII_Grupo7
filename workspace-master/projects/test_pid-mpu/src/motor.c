@@ -23,15 +23,15 @@ void Motor_Init(uint8_t channel, uint32_t frecuency)
 		PWM1_preescaleCLK(LPC_PWM1,0);
 
 		/* Match 0 (period) */
-		PWM1_ValueMatch(LPC_PWM1,CH0,frecuency);//
+		PWM1_SetMatch(LPC_PWM1,CH0,frecuency);//
 		/* Match 1 (duty) */
-		PWM1_ValueMatch(LPC_PWM1,CH1,ANGLE_0);
+		PWM1_SetMatch(LPC_PWM1,CH1,ANGLE_0);
 		/* Match 2 (duty) */
-		PWM1_ValueMatch(LPC_PWM1,CH2,ANGLE_0);
+		PWM1_SetMatch(LPC_PWM1,CH2,ANGLE_0);
 		/* Match 3 (duty) */
-		PWM1_ValueMatch(LPC_PWM1,CH3,ANGLE_0);
+		PWM1_SetMatch(LPC_PWM1,CH3,ANGLE_0);
 		/* Match 4 (duty) */
-		PWM1_ValueMatch(LPC_PWM1,CH4,ANGLE_0);
+		PWM1_SetMatch(LPC_PWM1,CH4,ANGLE_0);
 
 		/* Definimos que el MR0 resetee el TC */
 		PWM1_ConfigMatch(LPC_PWM1,CH0,0,0,0);
@@ -62,10 +62,10 @@ void Motor_Set(uint8_t channel,int32_t angle)
 {
 	uint32_t duty=0;
 	if(angle>=0){
-		duty = ANGLE_0+(angle*ANGLE_DELTA1);
+		duty = ANGLE_0 + (angle*(ANGLE_DELTA1));
 	}
 	else{
-		duty = ANGLE_0-(angle*ANGLE_DELTA1);
+		duty = (ANGLE_N95) + ( (angle + 90) *(ANGLE_DELTA1));
 	}
 
 	if( duty >= ANGLE_P95){
@@ -74,10 +74,10 @@ void Motor_Set(uint8_t channel,int32_t angle)
 	if( duty <= ANGLE_N95){
 		duty=ANGLE_N95;	}
 
-    PWM1_ValueMatch(LPC_PWM1,CH1,duty);
-    PWM1_ValueMatch(LPC_PWM1,CH2,duty);
-    PWM1_ValueMatch(LPC_PWM1,CH3,duty);
-    PWM1_ValueMatch(LPC_PWM1,CH4,duty);
+    PWM1_SetMatch(LPC_PWM1,CH1,duty);
+    PWM1_SetMatch(LPC_PWM1,CH2,duty);
+    PWM1_SetMatch(LPC_PWM1,CH3,duty);
+    PWM1_SetMatch(LPC_PWM1,CH4,duty);
 	 // Habilito los cambios en los MATCH's
     PWM1_EnableMatchValue(LPC_PWM1,CH0);
     PWM1_EnableMatchValue(LPC_PWM1,CH1);
@@ -91,9 +91,9 @@ void Motor_Set(uint8_t channel,int32_t angle)
 int32_t Motor_Get(uint8_t channel)
 {
 	uint32_t aux;
-	int32_t aux_angle;
-	PWM1_Match(LPC_PWM1 , channel ,&aux );
-	if(aux>ANGLE_0){aux_angle=aux*(95)/ANGLE_P95;}
-	else{ aux_angle=(int32_t)aux*(-95) / ANGLE_N95;}
+	float aux_angle;
+	PWM1_GetMatch(LPC_PWM1 , channel ,&aux );
+	if(aux>=ANGLE_0){aux_angle=(aux-ANGLE_0)/(ANGLE_DELTA1);}
+	else{ aux_angle= ( ( aux - (ANGLE_N95) )/(ANGLE_DELTA1))-90;}
 	return aux_angle;
 }
