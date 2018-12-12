@@ -74,16 +74,16 @@ void Motor_Set(uint8_t channel,int32_t angle)
 	if( duty <= ANGLE_N95){
 		duty=ANGLE_N95;	}
 
-    PWM1_SetMatch(LPC_PWM1,CH1,duty);
-    PWM1_SetMatch(LPC_PWM1,CH2,duty);
+    PWM1_SetMatch(LPC_PWM1,channel,duty);
+    /*PWM1_SetMatch(LPC_PWM1,CH2,duty);
     PWM1_SetMatch(LPC_PWM1,CH3,duty);
-    PWM1_SetMatch(LPC_PWM1,CH4,duty);
+    PWM1_SetMatch(LPC_PWM1,CH4,duty);*/
 	 // Habilito los cambios en los MATCH's
-    PWM1_EnableMatchValue(LPC_PWM1,CH0);
-    PWM1_EnableMatchValue(LPC_PWM1,CH1);
+    PWM1_EnableMatchValue(LPC_PWM1,channel);
+/*    PWM1_EnableMatchValue(LPC_PWM1,CH1);
     PWM1_EnableMatchValue(LPC_PWM1,CH2);
     PWM1_EnableMatchValue(LPC_PWM1,CH3);
-    PWM1_EnableMatchValue(LPC_PWM1,CH4);
+    PWM1_EnableMatchValue(LPC_PWM1,CH4);*/
 	/*	Reseteo todos los contadores */
 	PWM1_ResetCounters(LPC_PWM1);
 }
