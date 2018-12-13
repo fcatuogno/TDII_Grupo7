@@ -35,7 +35,7 @@ extern "C" {
 
 
 typedef enum{
-	MOTOR_X=1,
+	MOTOR_X=2,
 	MOTOR_Y,
 	MOTOR_Z
 
