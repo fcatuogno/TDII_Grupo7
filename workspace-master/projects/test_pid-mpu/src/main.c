@@ -23,15 +23,20 @@
 /* aceleracion+giroscopo */
 xQueueHandle 		ColaMPU;
 
-#define TIME_PERIOD_TASK_inTICKS	200/portTICK_RATE_MS 	// cada milisegundos
+#define TIME_PERIOD_TASK_inTICKS	1/portTICK_RATE_MS 	// cada milisegundos
+/*el tiempo cada cuanto nuestra tarea se ejecute sera el tiempo entre datos del MPU*/
+#define TIME_inS  1/TIME_PERIOD_TASK_inTICKS*0.001				// conversion de tick a segundos, se define en base al tiempo en TICKs
 
-#define TIME_inS  1*portTICK_RATE_MS*0.001				// conversion de tick a segundos:
+/*original:*/
+//#define TIME_inS  1*portTICK_RATE_MS*0.001				// conversion de tick a segundos:
 
 /* Datos para el control PID */
 VALUES_K PID;
 VALUES_ERROR error[3];
+#define TAM_QUEUE 1
+#define TAM 30
 
-#define P 1
+#define P 20
 #define I 0
 #define D 0
 
@@ -65,17 +70,16 @@ static void initHardware(void)
 	Motor_Init(CHANNELs,FREQ_50HZ);
 }
 
-/** @brief LecturaDeDatos
- *  @details
- *  Tarea que se encarga de pedir datos al MPU
- *	@return bool
- */
-void LecturaDeDatos (void * param)
+void Estabilizador (void * param)
 {
 	portTickType xLastWakeTime;
 	const portTickType xPeriod=TIME_PERIOD_TASK_inTICKS;
 	static values_mpu datos;
 	static angulos_mpu angulos;
+	static angulos_mpu angMotor;
+
+	uint8_t cont = TAM;
+
 	// Inicializamos el xLastWakeTime con el tiempo actual al ingresar a la tarea
 	xLastWakeTime=xTaskGetTickCount();
 	while(1){
@@ -88,16 +92,72 @@ void LecturaDeDatos (void * param)
 	 	Chip_I2C_MasterCmdRead(I2C1,MPU6050_DEVICE_ADDRESS,MPU6050_RA_GYRO_XOUT_H, datos.read_buffer_giro, 6);
 	 	MPU6050_GetData( datos.buffer_gral , datos.read_buffer_accel , datos.read_buffer_giro );
 
-	 	xQueueSend( ColaMPU, & datos , portMAX_DELAY);
+	 	MPU6050_GetAngle( & datos ,& angulos ,  ((float)TIME_inS));
+
+	 	angMotor.yaw = (angulos.yaw + angMotor.yaw);
+	 	angMotor.roll = (angulos.roll + angMotor.roll);
+	 	angMotor.pitch = (angulos.pitch + angMotor.pitch);
+	 	cont--;
+
+	 	if(cont == 0)
+		{
+			cont=TAM;
+			Motor_Set(MOTOR_X, -1.2*(angMotor.yaw/TAM));
+			Motor_Set(MOTOR_Y, 1.4*(angMotor.roll/TAM));
+			Motor_Set(MOTOR_Z, -1.2*(angMotor.pitch/TAM));
+
+			angMotor.yaw = 0;
+			angMotor.roll = 0;
+			angMotor.pitch = 0;
+		}
 	}
 
 }
+
+
+
+/** @brief LecturaDeDatos
+ *  @details
+ *  Tarea que se encarga de pedir datos al MPU
+ *	@return bool
+ */
+/*void LecturaDeDatos (void * param)
+{
+	portTickType xLastWakeTime;
+	const portTickType xPeriod=TIME_PERIOD_TASK_inTICKS;
+	static values_mpu datos;
+
+	static angulos_mpu angulos;
+
+	values_mpu auxiliar;
+	//static angulos_mpu angulos;
+	// Inicializamos el xLastWakeTime con el tiempo actual al ingresar a la tarea
+	xLastWakeTime=xTaskGetTickCount();
+	while(1){
+
+		// Espera al proximo ciclo;
+		vTaskDelayUntil( &xLastWakeTime , xPeriod );
+
+		// Realizamos el pedido de datos:
+	 	Chip_I2C_MasterCmdRead(I2C1,MPU6050_DEVICE_ADDRESS,MPU6050_RA_ACCEL_XOUT_H, datos.read_buffer_accel, 6);
+	 	Chip_I2C_MasterCmdRead(I2C1,MPU6050_DEVICE_ADDRESS,MPU6050_RA_GYRO_XOUT_H, datos.read_buffer_giro, 6);
+	 	MPU6050_GetData( datos.buffer_gral , datos.read_buffer_accel , datos.read_buffer_giro );
+
+	 	xQueueReceive( ColaMPU, &auxiliar, 0 );
+	 	xQueueSend( ColaMPU, & datos , 0);
+
+	}
+
+}
+*/
 /** @brief ProcesamientoDeDatos
  *  @details
  *  Tarea que se encarga de convertir datos al MPU a angulos
  *	@return bool
  */
-void ProcesamientoDeDatos (void * param)
+
+
+/*void ProcesamientoDeDatos (void * param)
 {
 	static values_mpu medicion;
 	static angulos_mpu angulos;
@@ -109,20 +169,21 @@ void ProcesamientoDeDatos (void * param)
 	static float iTime=TIME_inS;
 
 	static bool FIRST_TIME=TRUE;
+
 	while(1){
 
-		/* Se espera que haya algun dato en la cola para procesar */
+		 Se espera que haya algun dato en la cola para procesar
 		xQueueReceive( ColaMPU , & medicion , portMAX_DELAY );
 
-		/* Se toman los valores de los angulos */
+		 Se toman los valores de los angulos
 		MPU6050_GetAngle( & medicion ,& angulos ,  ((float)TIME_inS));
 
-		/* Error proporcional */
+		 Error proporcional
 		error[0].p=angulos.yaw; //
 		error[1].p=angulos.roll;//
 		error[2].p=angulos.pitch;//
 
-		/* Error integral */
+		 Error integral
 		error[0].i=error[0].i + error[0].p * iTime ;
 		if(error[0].i>OUTPUT_MAX_X)
 			error[0].i=OUTPUT_MAX_X;
@@ -141,8 +202,8 @@ void ProcesamientoDeDatos (void * param)
 		else if(error[0].i<OUTPUT_MIN_Z)
 			error[0].i=OUTPUT_MIN_Z;
 
-		/* Error derivativo */
-		/*No habra derivative kick ya que el setpoint no cambia*/
+		 Error derivativo
+		No habra derivative kick ya que el setpoint no cambia
 		if(FIRST_TIME){
 		error[0].d= 0 ;
 		error[1].d= 0 ;
@@ -158,12 +219,12 @@ void ProcesamientoDeDatos (void * param)
 		x_out=0;
 		y_out=0;
 		z_out=0;
-		/* Se determinan las salidas por la ecuacion tipica del pid */
+		 Se determinan las salidas por la ecuacion tipica del pid
 		x_out= PID.Kp * error[0].p + PID.Ki * error[0].i + PID.Kd * error[0].d ;
 		y_out= PID.Kp * error[1].p + PID.Ki * error[1].i + PID.Kd * error[1].d ;
 		z_out= PID.Kp * error[2].p + PID.Ki * error[2].i + PID.Kd * error[2].d ;
 
-		/* Se considera la posicion del motor como el punto anterior */
+		 Se considera la posicion del motor como el punto anterior
 		x_ant=(float)Motor_Get(MOTOR_X);
 		y_ant=(float)Motor_Get(MOTOR_Y);
 		z_ant=(float)Motor_Get(MOTOR_Z);
@@ -172,7 +233,7 @@ void ProcesamientoDeDatos (void * param)
 		//y_out += y_ant;
 		//z_out += z_ant;
 
-		/*Verifico no pasarme de los limites*/
+		Verifico no pasarme de los limites
 		if(x_out>OUTPUT_MAX_X)
 			x_out=OUTPUT_MAX_X;
 		else if(x_out<OUTPUT_MIN_X)
@@ -186,40 +247,53 @@ void ProcesamientoDeDatos (void * param)
 		if(z_out>OUTPUT_MAX_X)
 			z_out=OUTPUT_MAX_X;
 		else if(z_out<OUTPUT_MIN_X)
-			z_out=OUTPUT_MIN_X;
+			z_out=OUTPUT_MIN_X;*/
 
-		Motor_Set(MOTOR_X, x_out);
+		/*Motor_Set(MOTOR_X, x_out);
 		Motor_Set(MOTOR_Y, y_out);
 		Motor_Set(MOTOR_Z, z_out);
 
-		/*Pruebo con solo corregir error proporcional*/
-		//Motor_Set(MOTOR_X, angulos.yaw);
-		//Motor_Set(MOTOR_Y, angulos.roll);
-		//Motor_Set(MOTOR_Z, angulos.pitch);
+		Pruebo con solo corregir error proporcional
+		Motor_Set(MOTOR_X, angulos.yaw);
+		Motor_Set(MOTOR_Y, angulos.roll);
+		Motor_Set(MOTOR_Z, angulos.pitch);
 
 
 
-		/* Se guarda el error del punto anterior */
+		 Se guarda el error del punto anterior
 		error_ant[0]= error[0].p;
 		error_ant[1]= error[1].p;
 		error_ant[2]= error[2].p;
+
+		// Espera al proximo ciclo;
+		//vTaskDelayUntil( &xLastWakeTime , xPeriod );
 	}
-}
+}*/
 int main(void)
 {
 	//Inicializamos el hardware
 	initHardware();
 	// Creamos la cola que nos permite acceder a los datos del acelerometro
-	ColaMPU= xQueueCreate(100, sizeof(values_mpu));
+	//ColaMPU= xQueueCreate(TAM_QUEUE, sizeof(values_mpu));
 	// Tareas para manipular los datos y calcular los angulos:
-	xTaskCreate(LecturaDeDatos,(const char*) "ObtenerDatos", configMINIMAL_STACK_SIZE*2,0, tskIDLE_PRIORITY+1, NULL);
-	xTaskCreate(ProcesamientoDeDatos,(const char*) "DatosParaProcesar", configMINIMAL_STACK_SIZE*2,0, tskIDLE_PRIORITY+1, NULL);
+	//xTaskCreate(LecturaDeDatos,(const char*) "ObtenerDatos", configMINIMAL_STACK_SIZE*2,0, tskIDLE_PRIORITY+2, NULL);
+	//xTaskCreate(ProcesamientoDeDatos,(const char*) "DatosParaProcesar", configMINIMAL_STACK_SIZE*2,0, tskIDLE_PRIORITY+1, NULL);
+	xTaskCreate(Estabilizador,(const char*) "Estabilizador", configMINIMAL_STACK_SIZE*2,0, tskIDLE_PRIORITY+2, NULL);
+
 
 	/*while(1){
 		Motor_Set(2, 90);
 		Motor_Set(2, -90);
 		Motor_Set(2, 0);
+		Motor_Set(3, 90);
+		Motor_Set(3, -90);
+		Motor_Set(3, 0);
+		Motor_Set(4, 90);
+		Motor_Set(4, -90);
+		Motor_Set(4, 0);
+
 	}*/
+
 
 	// Iniciamos el Scheduler
 	vTaskStartScheduler();
