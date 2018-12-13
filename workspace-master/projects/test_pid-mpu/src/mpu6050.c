@@ -97,9 +97,9 @@ void MPU6050_GetAngle(values_mpu* samples,angulos_mpu* angle, float time)
 	accel_Y = atan2((double)(samples->buffer_gral[1]),sqrt(pow( samples->buffer_gral[0],2) + pow(samples->buffer_gral[2],2)))*RAD_TO_DEG;
 	accel_Z = 0;//atan2((double)sqrt(pow(samples->buffer_gral[0],2) + pow( samples->buffer_gral[1],2) ),samples->buffer_gral[2] ) *RAD_TO_DEG;
 
-	(angle->yaw)=accel_Y*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples->buffer_gral[5] / MPU6050_GS)* time + ant_angleX);//angle_y
-	(angle->roll)=accel_X*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples->buffer_gral[4] / MPU6050_GS)* time + ant_angleY); //angle_x
-	(angle->pitch)=accel_Z*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples->buffer_gral[6] / MPU6050_GS)* time + ant_angleZ);//angle_z
+	(angle->yaw)=accel_Y*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples->buffer_gral[4] / MPU6050_GS)* time + ant_angleX);//angle_y
+	(angle->roll)=accel_X*(1 - MPU6050_BETA)+ MPU6050_BETA*(( samples->buffer_gral[3] / MPU6050_GS)* time + ant_angleY); //angle_x
+	(angle->pitch)=/*accel_Z*(1 - MPU6050_BETA)+ MPU6050_BETA**/(( samples->buffer_gral[5] / MPU6050_GS)* time + ant_angleZ);//angle_z
 
 	ant_angleY=(angle->roll);
 	ant_angleX=(angle->yaw);
