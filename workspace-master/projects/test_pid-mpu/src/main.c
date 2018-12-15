@@ -23,7 +23,9 @@
 /* aceleracion+giroscopo */
 xQueueHandle 		ColaMPU;
 
+//--> Tiempo en que levanto cada muestra del MPU
 #define TIME_PERIOD_TASK_inTICKS	1/portTICK_RATE_MS 	// cada milisegundos
+
 /*el tiempo cada cuanto nuestra tarea se ejecute sera el tiempo entre datos del MPU*/
 #define TIME_inS  1/TIME_PERIOD_TASK_inTICKS*0.001				// conversion de tick a segundos, se define en base al tiempo en TICKs
 
@@ -77,6 +79,11 @@ void Estabilizador (void * param)
 	static values_mpu datos;
 	static angulos_mpu angulos;
 	static angulos_mpu angMotor;
+	static angulos_mpu ult_angulo;
+	angulos_mpu AngIntErr;
+	angulos_mpu AngDerErr;
+	angulos_mpu AngProErr;
+
 
 	uint8_t cont = TAM;
 
@@ -101,10 +108,36 @@ void Estabilizador (void * param)
 
 	 	if(cont == 0)
 		{
-			cont=TAM;
-			Motor_Set(MOTOR_X, -1.2*(angMotor.yaw/TAM));
-			Motor_Set(MOTOR_Y, 1.4*(angMotor.roll/TAM));
-			Motor_Set(MOTOR_Z, -1.2*(angMotor.pitch/TAM));
+	 		//Se guarda el valor anterior
+	 		ult_angulo.yaw = angMotor.yaw;
+	 		ult_angulo.roll = angMotor.roll;
+	 		ult_angulo.pitch = angMotor.pitch;
+	 		// Obtenemos el valor promediado actual
+	 		angMotor.yaw /=TAM;
+	 		angMotor.roll /=TAM;
+	 		angMotor.pitch /=TAM;
+	 		//Se reinicia el contador del promediadodor
+	 		cont=TAM;
+
+	 		//--> Error Integral
+	 		AngIntErr.yaw = (ult_angulo.yaw + angMotor.yaw)*(TIME_PERIOD_TASK_inTICKS*TAM);
+	 		AngIntErr.roll = (ult_angulo.roll + angMotor.roll)*(TIME_PERIOD_TASK_inTICKS*TAM);
+	 		AngIntErr.pitch = (ult_angulo.pitch + angMotor.pitch)*(TIME_PERIOD_TASK_inTICKS*TAM);
+
+	 		//--> Error Derivativo
+			AngDerErr.yaw = (ult_angulo.yaw - angMotor.yaw)/(TIME_PERIOD_TASK_inTICKS*TAM);
+			AngDerErr.roll = (ult_angulo.roll - angMotor.roll)/(TIME_PERIOD_TASK_inTICKS*TAM);
+			AngDerErr.pitch = (ult_angulo.pitch - angMotor.pitch)/(TIME_PERIOD_TASK_inTICKS*TAM);
+
+			//
+			x_out= PID.Kp * error[0].p + PID.Ki * error[0].i + PID.Kd * error[0].d ;
+			y_out= PID.Kp * error[1].p + PID.Ki * error[1].i + PID.Kd * error[1].d ;
+			z_out= PID.Kp * error[2].p + PID.Ki * error[2].i + PID.Kd * error[2].d ;
+
+
+			Motor_Set(MOTOR_X, -1*(angMotor.yaw));
+			Motor_Set(MOTOR_Y, (angMotor.roll));
+			Motor_Set(MOTOR_Z, -1*(angMotor.pitch));
 
 			angMotor.yaw = 0;
 			angMotor.roll = 0;
