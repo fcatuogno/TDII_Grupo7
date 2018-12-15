@@ -19,19 +19,20 @@ extern "C" {
  * @{
  */
 /* @brief cantidad de ticks para llegar a los 20mseg. */
-#define FREQ_50HZ	475600
+//#define FREQ_50HZ	475600
+#define FREQ_50HZ	480000
 /* @brief Todos los canales habilitados. */
 #define CHANNELs    0x0F
 
-#define ANGLE_N95	475600/40		/* @brief a los 0.5mseg */ 				//11890
-#define ANGLE_N90	475600*0.03		/* @brief a los 0.6mseg */				//14268
-#define ANGLE_N45	475600*0.05125	/* @brief a los 1.025mseg */			//24374.5
-//#define ANGLE_DELTA1 475600*0.0094*0.5  /* @brief salto de 1 grado */
+#define ANGLE_N95	FREQ_50HZ/40		/* @brief a los 0.5mseg */ 				//11890
+#define ANGLE_N90	FREQ_50HZ*0.03		/* @brief a los 0.6mseg */				//14268
+#define ANGLE_N45	FREQ_50HZ*0.05125	/* @brief a los 1.025mseg */			//24374.5
+//#define ANGLE_DELTA1 FREQ_50HZ*0.0094*0.5  /* @brief salto de 1 grado */
 #define ANGLE_DELTA1 (ANGLE_P95-ANGLE_0)/95									//
-#define ANGLE_0 	475600*0.0725	/* @brief a los 1.45mseg */				//34481
-#define ANGLE_P45	475600*0.09375  /* @brief a los 1.875mseg */			//44587.5
-#define ANGLE_P90 	475600*0.115	/* @brief a los 2.3mseg */				//54694
-#define ANGLE_P95 	475600*0.12 	/* @brief a los 2.4mseg */				//57072
+#define ANGLE_0 	FREQ_50HZ*0.0725	/* @brief a los 1.45mseg */				//34481
+#define ANGLE_P45	FREQ_50HZ*0.09375  /* @brief a los 1.875mseg */			//44587.5
+#define ANGLE_P90 	FREQ_50HZ*0.115	/* @brief a los 2.3mseg */				//54694
+#define ANGLE_P95 	FREQ_50HZ*0.12 	/* @brief a los 2.4mseg */				//57072
 
 
 typedef enum{
