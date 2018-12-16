@@ -10,6 +10,14 @@
 
 /*==================[macros and definitions]=================================*/
 
+
+#define OUTPUT_MAX_X	90
+#define OUTPUT_MIN_X	-90
+#define OUTPUT_MAX_Y	90
+#define OUTPUT_MIN_Y	-90
+#define OUTPUT_MAX_Z	90
+#define OUTPUT_MIN_Z	-90
+
 typedef struct
 {
 	float Kp;

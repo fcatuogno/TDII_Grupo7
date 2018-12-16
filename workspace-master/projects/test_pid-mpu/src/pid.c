@@ -59,3 +59,45 @@ float PID_GetK(VALUES_K* const var,KTES k)
 		}
 	return aux;
 }
+/*
+void PID_Set()
+{
+	//--> Error proporcional
+	error[0].p=angulos.yaw;
+	error[1].p=angulos.roll;
+	error[2].p=angulos.pitch;
+
+	//--> Error integral
+	error[0].i=error[0].i + error[0].p * iTime ;
+	if(error[0].i>OUTPUT_MAX_X)
+		error[0].i=OUTPUT_MAX_X;
+	else if(error[0].i<OUTPUT_MIN_X)
+		error[0].i=OUTPUT_MIN_X;
+
+	error[1].i=error[1].i + error[1].p * iTime ;
+	if(error[0].i>OUTPUT_MAX_Y)
+		error[0].i=OUTPUT_MAX_Y;
+	else if(error[0].i<OUTPUT_MIN_Y)
+		error[0].i=OUTPUT_MIN_Y;
+
+	error[2].i=error[2].i + error[2].p * iTime ;
+	if(error[0].i>OUTPUT_MAX_Z)
+		error[0].i=OUTPUT_MAX_Z;
+	else if(error[0].i<OUTPUT_MIN_Z)
+		error[0].i=OUTPUT_MIN_Z;
+
+	//Error derivativo
+	//No habra derivative kick ya que el setpoint no cambia
+	if(FIRST_TIME){
+	error[0].d= 0 ;
+	error[1].d= 0 ;
+	error[2].d= 0 ;
+	FIRST_TIME=FALSE;
+	}
+	else{
+	error[0].d= ( error[0].p - error_ant[0] )/ (iTime) ;
+	error[1].d= ( error[1].p- error_ant[1] )/ (iTime) ;
+	error[2].d= ( error[2].p - error_ant[2] )/ (iTime) ;
+
+}
+}*/

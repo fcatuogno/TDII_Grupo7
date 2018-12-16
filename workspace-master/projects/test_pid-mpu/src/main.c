@@ -38,9 +38,17 @@ VALUES_ERROR error[3];
 #define TAM_QUEUE 1
 #define TAM 30
 
-#define P 20
-#define I 0
-#define D 0
+#define Px 1.2
+#define Ix 0.3
+#define Dx 0
+
+#define Py 1
+#define Iy 0
+#define Dy 0
+
+#define Pz 1
+#define Iz 0
+#define Dz 0
 
 #define OUTPUT_MAX_X	90
 #define OUTPUT_MIN_X	-90
@@ -68,7 +76,7 @@ static void initHardware(void)
 	Chip_I2C_SetMasterEventHandler(I2C1, Chip_I2C_EventHandlerPolling);
 
 	MPU6050_Init(I2C1);
-	PID_Init(&PID, P , I , D);
+	//PID_Init(&PID, P , I , D);
 	Motor_Init(CHANNELs,FREQ_50HZ);
 }
 
@@ -101,6 +109,7 @@ void Estabilizador (void * param)
 
 	 	MPU6050_GetAngle( & datos ,& angulos ,  ((float)TIME_inS));
 
+	 	/*promediador de TAM muestras*/
 	 	angMotor.yaw = (angulos.yaw + angMotor.yaw);
 	 	angMotor.roll = (angulos.roll + angMotor.roll);
 	 	angMotor.pitch = (angulos.pitch + angMotor.pitch);
@@ -116,24 +125,25 @@ void Estabilizador (void * param)
 	 		angMotor.yaw /=TAM;
 	 		angMotor.roll /=TAM;
 	 		angMotor.pitch /=TAM;
-	 		//Se reinicia el contador del promediadodor
+	 		//Se reinicia el contador del promediador
 	 		cont=TAM;
 
+
 	 		//--> Error Integral
-	 		AngIntErr.yaw = (ult_angulo.yaw + angMotor.yaw)*(TIME_PERIOD_TASK_inTICKS*TAM);
-	 		AngIntErr.roll = (ult_angulo.roll + angMotor.roll)*(TIME_PERIOD_TASK_inTICKS*TAM);
-	 		AngIntErr.pitch = (ult_angulo.pitch + angMotor.pitch)*(TIME_PERIOD_TASK_inTICKS*TAM);
+	 		AngIntErr.yaw = (ult_angulo.yaw + angMotor.yaw)*(TIME_inS*TAM);
+	 		AngIntErr.roll = (ult_angulo.roll + angMotor.roll)*(TIME_inS*TAM);
+	 		AngIntErr.pitch = (ult_angulo.pitch + angMotor.pitch)*(TIME_inS*TAM);
 
 	 		//--> Error Derivativo
-			AngDerErr.yaw = (ult_angulo.yaw - angMotor.yaw)/(TIME_PERIOD_TASK_inTICKS*TAM);
-			AngDerErr.roll = (ult_angulo.roll - angMotor.roll)/(TIME_PERIOD_TASK_inTICKS*TAM);
-			AngDerErr.pitch = (ult_angulo.pitch - angMotor.pitch)/(TIME_PERIOD_TASK_inTICKS*TAM);
+	 		//Se trabaja con posicion y no con error para evitar "derivatice kick" en cambio de setpoint
+			AngDerErr.yaw = (ult_angulo.yaw - angMotor.yaw)/(TIME_inS*TAM);
+			AngDerErr.roll = (ult_angulo.roll - angMotor.roll)/(TIME_inS*TAM);
+			AngDerErr.pitch = (ult_angulo.pitch - angMotor.pitch)/(TIME_inS*TAM);
 
 			//
-			x_out= PID.Kp * error[0].p + PID.Ki * error[0].i + PID.Kd * error[0].d ;
-			y_out= PID.Kp * error[1].p + PID.Ki * error[1].i + PID.Kd * error[1].d ;
-			z_out= PID.Kp * error[2].p + PID.Ki * error[2].i + PID.Kd * error[2].d ;
-
+			angMotor.yaw = Px*angMotor.yaw + Ix*AngIntErr.yaw + Dx*AngDerErr.yaw;
+			angMotor.roll = Py*angMotor.roll + Iy*AngIntErr.roll + Dy*AngDerErr.roll;
+			angMotor.pitch = Pz*angMotor.pitch + Iy*AngIntErr.pitch + Dz*AngDerErr.pitch;
 
 			Motor_Set(MOTOR_X, -1*(angMotor.yaw));
 			Motor_Set(MOTOR_Y, (angMotor.roll));
@@ -314,7 +324,8 @@ int main(void)
 	xTaskCreate(Estabilizador,(const char*) "Estabilizador", configMINIMAL_STACK_SIZE*2,0, tskIDLE_PRIORITY+2, NULL);
 
 
-	/*while(1){
+	/*
+	while(1){
 		Motor_Set(2, 90);
 		Motor_Set(2, -90);
 		Motor_Set(2, 0);
@@ -325,8 +336,8 @@ int main(void)
 		Motor_Set(4, -90);
 		Motor_Set(4, 0);
 
-	}*/
-
+	}
+*/
 
 	// Iniciamos el Scheduler
 	vTaskStartScheduler();
