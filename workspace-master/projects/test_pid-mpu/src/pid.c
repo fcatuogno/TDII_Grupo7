@@ -9,95 +9,69 @@
 #include "chip.h"
 #include "math.h"
 #include "pid.h"
-/*	Inicializacion de las constante del control PID	*/
-void PID_Init( VALUES_K* var, float kp, float ki, float kd)
+
+angulos_mpu PID_Compute(angulos_mpu angMPU, angulos_mpu angMotor, angulos_mpu SetPoint, VALUES_K Kx, VALUES_K Ky, VALUES_K Kz,float period, angulos_mpu limites_Min, angulos_mpu limites_Max)
 {
-	if( kp <= 0 || ki < 0 || kd < 0)
-	{ return; }
-	var->Kp=kp;
-	var->Ki=ki;
-	var->Kd=kd;
-}
-/* Cambio los valores de las constantes del control PID*/
-void PID_SetK(VALUES_K* var, float value, KTES k)
-{
-	if (value>=0)
-	{
-		switch(k)
-		{
-			case KP:
-				var->Kp=value;
-			break;
-			case KI:
-				var->Ki=value;
-			break;
-			case KD:
-				var->Kd=value;
-			break;
-			default:
-				break;
-		}
+	angulos_mpu error;
+	static angulos_mpu ult_angulo;
+	static angulos_mpu AngIntErr = {.pitch=0, .roll=0, .yaw=0};
+	angulos_mpu AngDerErr;
+	static int first_time = TRUE;
+
+	if(first_time){
+		ult_angulo = angMPU;
+		first_time = FALSE;
 	}
-}
 
-float PID_GetK(VALUES_K* const var,KTES k)
-{
-	float aux=0;
-	switch(k)
-		{
-			case KP:
-				aux=var->Kp;
-			break;
-			case KI:
-				aux=var->Ki;
-			break;
-			case KD:
-				aux=var->Kd;
-			break;
-			default:
-				break;
-		}
-	return aux;
-}
-/*
-void PID_Set()
-{
-	//--> Error proporcional
-	error[0].p=angulos.yaw;
-	error[1].p=angulos.roll;
-	error[2].p=angulos.pitch;
+	//calculo error en base a setpoint
+	error.yaw = SetPoint.yaw - angMPU.yaw;
+	error.roll = SetPoint.roll - angMPU.roll;
+	error.pitch = SetPoint.pitch - angMPU.pitch;
 
-	//--> Error integral
-	error[0].i=error[0].i + error[0].p * iTime ;
-	if(error[0].i>OUTPUT_MAX_X)
-		error[0].i=OUTPUT_MAX_X;
-	else if(error[0].i<OUTPUT_MIN_X)
-		error[0].i=OUTPUT_MIN_X;
+	//--> Error Integral   --------TIENE EN CUENTA TODOS LOS ERRORES ANTERIORES---------
+	//Ante cambios de CTEs on the fly debe afectar solo a muestra actuales, no pasadas:
+	AngIntErr.yaw += (Kx.Ki*error.yaw);
+	AngIntErr.yaw *= period;
+	AngIntErr.roll += (Ky.Ki*error.roll);
+	AngIntErr.roll *= period;
+	AngIntErr.pitch += (Kz.Ki*error.pitch);
+	AngIntErr.pitch *= period;
 
-	error[1].i=error[1].i + error[1].p * iTime ;
-	if(error[0].i>OUTPUT_MAX_Y)
-		error[0].i=OUTPUT_MAX_Y;
-	else if(error[0].i<OUTPUT_MIN_Y)
-		error[0].i=OUTPUT_MIN_Y;
+	//--> Error Derivativo
+	//Se trabaja con posicion y no con error para evitar "derivatice kick" en cambio de setpoint
+	AngDerErr.yaw = (ult_angulo.yaw - angMPU.yaw)/(period);
+	AngDerErr.roll = (ult_angulo.roll - angMPU.roll)/(period);
+	AngDerErr.pitch = (ult_angulo.pitch - angMPU.pitch)/(period);
 
-	error[2].i=error[2].i + error[2].p * iTime ;
-	if(error[0].i>OUTPUT_MAX_Z)
-		error[0].i=OUTPUT_MAX_Z;
-	else if(error[0].i<OUTPUT_MIN_Z)
-		error[0].i=OUTPUT_MIN_Z;
+	//Se guarda el valor anterior
+	ult_angulo.yaw = angMPU.yaw;
+	ult_angulo.roll = angMPU.roll;
+	ult_angulo.pitch = angMPU.pitch;
 
-	//Error derivativo
-	//No habra derivative kick ya que el setpoint no cambia
-	if(FIRST_TIME){
-	error[0].d= 0 ;
-	error[1].d= 0 ;
-	error[2].d= 0 ;
-	FIRST_TIME=FALSE;
+	angMPU.yaw = /*angMotor.yaw*/ + (Kx.Kp*error.yaw + AngIntErr.yaw + Kx.Kd*AngDerErr.yaw);
+	angMPU.roll = /*angMotor.roll +*/ (Ky.Kp*error.roll + AngIntErr.roll + Ky.Kd*AngDerErr.roll);
+	angMPU.pitch = /*angMotor.pitch +*/ (Kz.Kp*error.pitch + AngIntErr.pitch + Kz.Kd*AngDerErr.pitch);
+
+	/*---------------VERIFICAR LIMITEs-----------------------*/
+	if(angMPU.yaw>limites_Max.yaw){
+		angMPU.yaw=limites_Max.yaw;
+	}else if(angMPU.yaw<limites_Min.yaw){
+		angMPU.yaw=limites_Min.yaw;
 	}
-	else{
-	error[0].d= ( error[0].p - error_ant[0] )/ (iTime) ;
-	error[1].d= ( error[1].p- error_ant[1] )/ (iTime) ;
-	error[2].d= ( error[2].p - error_ant[2] )/ (iTime) ;
 
+	if(angMPU.roll>limites_Max.roll){
+		angMPU.roll=limites_Max.roll;
+	}else if(angMPU.roll<limites_Min.roll){
+		angMPU.roll=limites_Min.roll;
+	}
+
+	if(angMPU.pitch>limites_Max.pitch){
+		angMPU.pitch=limites_Max.pitch;
+	}else if(angMPU.pitch<limites_Min.pitch){
+		angMPU.pitch=limites_Min.pitch;
+	}
+
+
+	return angMPU;
 }
-}*/
+

@@ -8,15 +8,11 @@
 #ifndef PROJECTS_TEST_PID_MPU_INC_PID_H_
 #define PROJECTS_TEST_PID_MPU_INC_PID_H_
 
+/*=========================[includes]========================================*/
+#include "../../test_pid-mpu/inc/mpu6050.h"
+
 /*==================[macros and definitions]=================================*/
 
-
-#define OUTPUT_MAX_X	90
-#define OUTPUT_MIN_X	-90
-#define OUTPUT_MAX_Y	90
-#define OUTPUT_MIN_Y	-90
-#define OUTPUT_MAX_Z	90
-#define OUTPUT_MIN_Z	-90
 
 typedef struct
 {
@@ -25,24 +21,24 @@ typedef struct
 	float Kd;
 }VALUES_K;
 
-typedef struct
+/*typedef struct
 {
 	float p;
 	float d;
 	float i;
-}VALUES_ERROR;
+}VALUES_ERROR;*/
 
-typedef enum
+/*typedef enum
 {
 	KP,
 	KI,
 	KD
-}KTES;
+}KTES;*/
 
-void PID_Init( VALUES_K* var, float k1, float k2, float k3);
+/*void PID_Init( VALUES_K* var, float k1, float k2, float k3);
 void PID_SetK( VALUES_K* var, float value,KTES k);
-float PID_GetK(VALUES_K* const var,KTES k);
-
+float PID_GetK(VALUES_K* const var,KTES k);*/
+angulos_mpu PID_Compute(angulos_mpu angMPU,  angulos_mpu angMotor, angulos_mpu SetPoint, VALUES_K Kx, VALUES_K Ky, VALUES_K Kz,float period, angulos_mpu limites_Min, angulos_mpu limites_Max);
 
 
 #endif /* PROJECTS_TEST_PID_MPU_INC_PID_H_ */
